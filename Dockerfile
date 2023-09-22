@@ -38,8 +38,14 @@ RUN set -ex; \
     rm -rf ${spark_tmp};
 
 ENV SPARK_HOME /opt/spark
-
 ENV PATH $SPARK_HOME/bin:$PATH
 RUN export PATH
+
+RUN mkdir -p /home/app
+ENV APP_HOME=/home/app
+
+WORKDIR ${APP_HOME}
+
+COPY App/WordCount.py ${APP_HOME}
 
 CMD [ "/bin/bash" ]
