@@ -19,7 +19,7 @@ RUN export JAVA_HOME
 ENV PYSPARK_PYTHON python2
 RUN export PYSPARK_PYTHON
 
-ENV SPARK_TGZ_URL=https://archive.apache.org/dist/spark/spark-1.3.0/spark-1.3.0-bin-hadoop2.4.tgz 
+ENV SPARK_TGZ_URL=https://archive.apache.org/dist/spark/spark-1.5.0/spark-1.5.0-bin-hadoop1.tgz 
 
 RUN set -ex; \
     mkdir ${spark_tmp}; \
@@ -46,6 +46,6 @@ ENV APP_HOME=/home/app
 
 WORKDIR ${APP_HOME}
 
-COPY App/WordCount.py ${APP_HOME}
+COPY App/* ${APP_HOME}
 
-CMD [ "/bin/bash" ]
+CMD [ "pyspark", "WordCount.py"]

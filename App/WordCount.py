@@ -1,25 +1,21 @@
 from pyspark import SparkConf, SparkContext
-from pyspark.sql import HiveContext
-from pyspark.sql.functions import split
-from pyspark.sql.functions import desc
 
-# Configurar Spark
-conf = SparkConf().setAppName("PythonWordCount")
+conf = SparkConf().setAppName("WordCount")
 sc = SparkContext(conf=conf)
-hiveContext = HiveContext(sc)
 
-# Cargar datos
-data = hiveContext.read.format('com.databricks.spark.csv').options(header='false', inferSchema='true').load('movies.csv')
+HOMEAPP_DATA = "/home/app/Data/"
+filename = "movies.csv"
 
-# Realizar las transformaciones
-df = data.select(split(data['_c0'], ' ').alias('words')) \
-         .selectExpr('explode(words) as word') \
-         .groupBy('word') \
-         .count() \
-         .orderBy(desc('count'))
+lines = sc.textFile(HOMEAPP_DATA + filename)
 
-# Guardar el DataFrame resultante como un archivo CSV
-df.toPandas().to_csv("output.csv", index=False)
+word_count = lines.flatMap(lambda line: line.split(" ")) \
+                 .map(lambda word: (word, 1)) \
+                 .reduceByKey(lambda a, b: a + b)
 
-# Detener SparkContext
+sorted_word_count = word_count.sortBy(lambda x: x[1], ascending=False)
+
+sorted_word_count_single_partition = sorted_word_count.coalesce(1)
+
+sorted_word_count_single_partition.saveAsTextFile(HOMEAPP_DATA + "output")
+
 sc.stop()
